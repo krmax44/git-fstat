@@ -33,8 +33,14 @@ export default async function gitFstat(
 		});
 
 		gitProcess.stdout.on('data', (data: Buffer) => {
-			const date = new Date(data.toString());
-			changes.unshift(date);
+			const dates = data.toString().split('\n');
+
+			for (const item of dates) {
+				const date = Date.parse(item);
+				if (!isNaN(date)) {
+					changes.unshift(new Date(date));
+				}
+			}
 		});
 
 		gitProcess.on('close', code => {
