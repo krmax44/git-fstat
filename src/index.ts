@@ -26,17 +26,12 @@ export default async function gitFstat(
 			cwd
 		});
 
-		gitProcess.on('error', err => {
-			gitProcess.kill();
-
-			reject(new Error(`Could not run Git command: ${err}`));
-		});
-
 		gitProcess.stdout.on('data', (data: Buffer) => {
 			const dates = data.toString().split('\n');
 
 			for (const item of dates) {
 				const date = Date.parse(item);
+
 				if (!isNaN(date)) {
 					changes.unshift(new Date(date));
 				}
@@ -58,8 +53,13 @@ export default async function gitFstat(
 			});
 		});
 
+		gitProcess.on('error', err => {
+			gitProcess.kill();
+
+			reject(new Error(`Could not run Git command: ${err}`));
+		});
+
 		gitProcess.stderr.on('data', err => {
-			console.log(err);
 			gitProcess.kill();
 
 			reject(new Error(`Git error: ${err}`));
